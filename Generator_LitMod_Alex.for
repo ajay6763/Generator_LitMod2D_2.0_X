@@ -12,12 +12,12 @@ c        Lavinia Tunini contributed some subroutines
 c
 c        this is a poorly written code...much could be improved.
 c        modified 07/2012 JCA
-c        last modified 11/2013 MF
+c        modified 11/2013 MF
 c           PREMIN changed to 1500bar for sublithospheric mantle.
 c           Note that temmin and temmax for sublithospheric mantle are set
 c           to 1173K and 2200K, respectively (case javi=1)
+c	modified 03/23 by AR in order to run Perple_X 6.9.1 and later updates of perple_X
 c
-c         # This a simple version by Alex 2023 Pyreneese profile (ask her to write)
 c TO COMPILE : gfortran Generator_LitMod_Alex.for olivine.for diopside.for garnet.for albite.for anortite.for ortenstatitemg90.for spinel.for generator_table_atten_corr.for -o  Generator_LitMod_Alex
  
 c
@@ -89,31 +89,16 @@ c  this part is only for one composition...
 	write(*,*)'************************************************'
       write(*,*)''
       write(*,*)''
-1     write(*,*)'Choose the thermodynamic database/formalism (1-6)'
-      write(*,*)' (Make sure you understand the implications      '
-	write(*,*)'  of your choice!)                               ' 
-      write(*,*)'5. H&P98 FOR new version of perplex               '                                       '
-	indice=5   ! A CHANGER ICI !!	
-c      read(*,*) indice
-c...  check for typos...
+      write(*,*)'We will use the H&P98 thermodynamic database    '           '                                       '
+	indice=5  	
 
-      write(*,*) '      Your option is',indice
 	write(*,*) ''
-      if( (indice.eq.4) .or. (indice.eq.5) .or. (indice.eq.6) )then
-      check=indice
-	else
-	write(*,*) 'Choose the right number buddy!!     '
-	go to 1
-      endif
-
-
 
 call system('rm Buildfile.dat')
 c     ...sublithospheric vs lithospheric mantle
       print *, 'Will this be a sublithospheric mantle?'
       print *, 'YES = 1            NO = 0'
 	read(*,*) javi
-c	javi=0   ! A CHANGER ICI !!	
 
 	if(javi.eq.0)then
 	premax='0.145E+06'
@@ -137,46 +122,18 @@ c   ...check for water, Na, and K
 	write(*,*)'Do you have H2O and K2O in your system?'
       write(*,*) 'YES = 1        NO = 0'
 	read(*,*) kkolor
-c	kkolor=1   ! A CHANGER ICI !!	
       endif
 
   
 c... select the correct composition...
       write(*,*)'Now enter the bulk composition (in wt%) for the oxides'
-
-      select case (check)
-	case(4)
-      write(*,*)'SiO2 Al2O3 FeO MgO CaO Na2O K2O H2O (in this order,
-     * one per line)'
-	write(*,*) ''
-	read(*,*) aSi, bAl, cFe, dMg, eCa, fNa, gK, h20
-	cctot=aSi+bAl+cFe+dMg+eCa+fNa+gK+h20
-c	aSi=44.3100
-c	bAl=3.48000
-c	cFe=7.96000
-c	dMg=39.6300
-c	eCa=0.00000
-c	fNa=0.00000
-c	gK=0.00000
-c	h20=4.36000
-c	cctot=aSi+bAl+cFe+dMg+eCa+fNa+gK+h20
-
-	case(5)
       if(kkolor.eq.1)then
 	 write(*,*)'SiO2 Al2O3 FeO MgO CaO Na2O K2O H2O (in this order,
      * one per line)'
 	 write(*,*) ''
 	read(*,*) aSi, bAl, cFe, dMg, eCa, fNa, gK, h20
 	cctot=aSi+bAl+cFe+dMg+eCa+fNa+gK+h20
-c      	aSi=44.3100
-c	bAl=3.48000
-c	cFe=7.96000
-c	dMg=39.6300
-c	eCa=0.00000
-c	fNa=0.00000
-c	gK=0.00000
-c	h20=4.36000
-c	cctot=aSi+bAl+cFe+dMg+eCa+fNa+gK+h20
+
 	else
        write(*,*)'SiO2 Al2O3 FeO MgO CaO Na2O (in this order,
      * one per line)'
@@ -184,8 +141,6 @@ c	cctot=aSi+bAl+cFe+dMg+eCa+fNa+gK+h20
        read(*,*) aSi, bAl, cFe, dMg, eCa, fNa
        cctot=aSi+bAl+cFe+dMg+eCa+fNa
 	endif
-
-	end select
 
 c    ...checking oxide amounts...
       if(cctot.ne.100.E0)then
@@ -289,14 +244,12 @@ c    ...composition of the solid residue...
 
 c ...selecting the different databases/formalisms
 
-********************************************
+c********************************************
 c   ...writing the text file for build.exe ...
 c    ...remember to change the file names here!!!!
-**************************************
-      select case (check)
+c**************************************
 
 c****************************************************************
-	case(5)
 c ...this is for new perplex dat file (new = 2022) ALEX...
 c      datfil="Buildfile.dat"
 
@@ -431,9 +384,6 @@ c      datfil="Buildfile.dat"
 
 
 c**************************************************************
-
-	case(6)
-      end select
                                     
 ******************************************************************
 c    ...running build.exe...
@@ -664,7 +614,7 @@ c adding some info at the top of table
       open(2,file='TABLE_LITMOD_use')
       write(2,*)"Comments untill line number 12"
       write(2,*)"Petrological Info:"
-      write(2,*)"Database:",check
+      write(2,*)"Database: H&P98 Generator_LitMod2D_2.0_X"
       if(kkolor.eq.1) then
           write(2,*)"SiO2,Al2O3,FeO,MgO,CaO,Na2O,K2O,H2O"
           write(2,*)aSi, bAl, cFe, dMg, eCa, fNa, gK, h20
